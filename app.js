@@ -23,10 +23,14 @@ const postSchema = new mongoose.Schema({
 const Post = mongoose.model("Post", postSchema);
 
 
-const posts = [];
 
 app.get('/', function(req, res) {
-    res.render('home', { posts: posts })
+
+    Post.find({}, function(err, posts) {
+        res.render('home', { posts: posts })
+
+    })
+
 });
 
 app.get('/about', function(req, res) {
@@ -50,23 +54,27 @@ app.post('/addPost', function(req, res) {
         content: postBody
     });
 
-    post.save();
-    res.redirect('/');
-})
-
-app.get('/post/:postName', function(req, res) {
-    let postName = _.lowerCase(req.params.postName);
-
-    posts.forEach(post => {
-        let postTitle = _.lowerCase(post.title);
-        if (postTitle === postName) {
-            console.log('Ok');
-            res.render('post', { postTitle: post.title, postContent: post.content })
+    post.save(function(err) {
+        if (!err) {
+            res.redirect('/');
         }
-
     });
 
-});
+})
+
+app.get('/post/:postId', function(req, res) {
+    let postId = req.params.postId;
+    Post.findById(postId, function(err, posts) {
+        if (!err) {
+            res.render('post', {
+                postTitle: posts.title,
+                postContent: posts.content
+            })
+        }
+    })
+
+})
+
 
 
 
